@@ -1,85 +1,99 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+
 
 public class TestMain {
 
 
 	
-	public static void main(String[] args) {
-		Workbook book = null;
-		try
-		{
-			book = new HSSFWorkbook(new FileInputStream("C://Users//akanchha.jaiswal//Downloads//TestExcel.xls"));
-		}
-		catch (FileNotFoundException e1)
-		{
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		catch (IOException e1)
-		{
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		Sheet sheet = book.getSheet("Birthdays2");
-		Sheet sheet2 = book.getSheet("AKANCHHA");
-		Row r = sheet2.getRow(0);
-		System.out.println("Row value : "+r.getCell(0).getStringCellValue());
-		sheet2.removeRow(r);
-		System.out.println("Row removed");
-		// first row start with zero 
-		Row row = sheet.createRow(0); 
-		// we will write name and birthdates in two columns
-		// name will be String and birthday would be Date 
-		// formatted as dd.mm.yyyy 
-		Cell name = row.createCell(0); 
-		name.setCellValue("John");
-		Cell birthdate = row.createCell(1); 
-		// steps to format a cell to display date value in Excel 
-		// 1. Create a DataFormat // 2. Create a CellStyle 
-		// 3. Set format into CellStyle 
-		// 4. Set CellStyle into Cell 
-		// 5. Write java.util.Date into Cell 
-		DataFormat format = book.createDataFormat();
-		CellStyle dateStyle = book.createCellStyle(); 
-		dateStyle.setDataFormat(format.getFormat("dd.mm.yyyy"));
-		birthdate.setCellStyle(dateStyle); 
-		// It's very trick method, deprecated, don't use // year is from 1900, month starts with zero 
-		birthdate.setCellValue(new Date(110, 10, 10)); 
-		// auto-resizing columns sheet.autoSizeColumn(1); 
-		// Now, its time to write content of Excel into File
-		try
-		{
-			book.write(new FileOutputStream("C://Users//akanchha.jaiswal//Downloads//TestExcel.xls"));
-			System.out.println("Written in file");
-			book.close();
-		}
-		catch (FileNotFoundException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	
+	 public static void main(String[] args) throws IOException {
+		 TestMain excel = new TestMain();
+	        excel.process("C://Users//akanchha.jaiswal//Downloads//TestExcel.xls");
+	    }
+	 
+	 public void process(String fileName) throws IOException {
+	        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
+	        HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(fileName));
+	        HSSFWorkbook myWorkBook = new HSSFWorkbook();
+	        HSSFSheet sheet = null;
+	        HSSFSheet sheet2 = null;
+	        HSSFRow row = null;
+	        HSSFCell cell = null;
+	        HSSFSheet mySheet = null;
+	        HSSFRow myRow = null;
+	        HSSFCell myCell = null;
+	        int sheets = workbook.getNumberOfSheets();
+	        int fCell = 0;
+	        int lCell = 0;
+	        int fRow = 0;
+	        int lRow = 0;
+	        for (int iSheet = 1; iSheet < sheets; iSheet++) {
+	            sheet = workbook.getSheetAt(iSheet);
+	            sheet2 = workbook.getSheetAt(iSheet-1);
+	            if (sheet != null) {
+	                mySheet = myWorkBook.createSheet(sheet2.getSheetName());
+	                fRow = sheet.getFirstRowNum();
+	                lRow = sheet.getLastRowNum();
+	                for (int iRow = fRow; iRow <= lRow; iRow++) {
+	                    row = sheet.getRow(iRow);
+	                    myRow = mySheet.createRow(iRow);
+	                    if (row != null) {
+	                        fCell = row.getFirstCellNum();
+	                        lCell = row.getLastCellNum();
+	                        for (int iCell = fCell; iCell < lCell; iCell++) {
+	                            cell = row.getCell(iCell);
+	                            myCell = myRow.createCell(iCell);
+	                            if (cell != null) {
+	                                myCell.setCellType(cell.getCellType());
+	                                switch (cell.getCellType()) {
+	                                //case HSSFCell.CELL_TYPE_BLANK:
+	                                    //myCell.setCellValue("");
+	                                   // break;
 
+	                                //case HSSFCell.CELL_TYPE_BOOLEAN:
+	                                    //myCell.setCellValue(cell.getBooleanCellValue());
+	                                   // break;
 
-	
-	
-}
+	                               // case HSSFCell.CELL_TYPE_ERROR:
+	                                   // myCell.setCellErrorValue(cell.getErrorCellValue());
+	                                  //  break;
 
-}
+	                                //case HSSFCell.CELL_TYPE_FORMULA:
+	                                    //myCell.setCellFormula(cell.getCellFormula());
+	                                   // break;
+
+	                                case HSSFCell.CELL_TYPE_NUMERIC:
+	                                    myCell.setCellValue(cell.getNumericCellValue());
+	                                    break;
+
+	                                case HSSFCell.CELL_TYPE_STRING:
+	                                    myCell.setCellValue(cell.getStringCellValue());
+	                                    break;
+	                                default:
+	                                    myCell.setCellFormula(cell.getCellFormula());
+	                                }
+	                            }
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	        
+	        myWorkBook.createSheet("Current");
+	        //Now update the current sheet with the data base values
+	        bis.close();
+	        BufferedOutputStream bos = new BufferedOutputStream(
+	                new FileOutputStream("C://Users//akanchha.jaiswal//Downloads//TestExcel.xls", false));
+	        myWorkBook.write(bos);
+	        bos.close();
+	    }
+	}
+
