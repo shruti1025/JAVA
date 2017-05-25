@@ -16,7 +16,7 @@ public class TestMain {
 	
 	 public static void main(String[] args) throws IOException {
 		 TestMain excel = new TestMain();
-	        excel.process("C://Users//akanchha.jaiswal//Downloads//TestExcel.xls");
+	        excel.process("C://Users//akanchha.jaiswal//Downloads//Outstanding_Items_Count 12-May-2017.xls");
 	    }
 	 
 	 public void process(String fileName) throws IOException {
@@ -35,11 +35,14 @@ public class TestMain {
 	        int lCell = 0;
 	        int fRow = 0;
 	        int lRow = 0;
-	        for (int iSheet = 1; iSheet < sheets; iSheet++) {
+	        for (int iSheet = 2; iSheet < sheets; iSheet++) {
 	            sheet = workbook.getSheetAt(iSheet);
 	            sheet2 = workbook.getSheetAt(iSheet-1);
+	            String sheetName = sheet2.getSheetName();
 	            if (sheet != null) {
-	                mySheet = myWorkBook.createSheet(sheet2.getSheetName());
+	                workbook.removeSheetAt(iSheet-1);
+	                mySheet = workbook.createSheet(sheetName);
+
 	                fRow = sheet.getFirstRowNum();
 	                lRow = sheet.getLastRowNum();
 	                for (int iRow = fRow; iRow <= lRow; iRow++) {
@@ -85,14 +88,16 @@ public class TestMain {
 	                    }
 	                }
 	            }
+	             
+	           
 	        }
 	        
-	        myWorkBook.createSheet("Current");
+	        myWorkBook.createSheet("TLMResultCurrentday");
 	        //Now update the current sheet with the data base values
 	        bis.close();
 	        BufferedOutputStream bos = new BufferedOutputStream(
-	                new FileOutputStream("C://Users//akanchha.jaiswal//Downloads//TestExcel.xls", false));
-	        myWorkBook.write(bos);
+	                new FileOutputStream("C://Users//akanchha.jaiswal//Downloads//Outstanding_Items_Count 12-May-2017.xls", false));
+	        workbook.write(bos);
 	        bos.close();
 	    }
 	}
