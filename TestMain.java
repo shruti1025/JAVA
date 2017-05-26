@@ -4,10 +4,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class TestMain {
@@ -23,82 +28,79 @@ public class TestMain {
 	        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
 	        HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(fileName));
 	        HSSFWorkbook myWorkBook = new HSSFWorkbook();
-	        HSSFSheet sheet = null;
-	        HSSFSheet sheet2 = null;
-	        HSSFRow row = null;
-	        HSSFCell cell = null;
-	        HSSFSheet mySheet = null;
-	        HSSFRow myRow = null;
-	        HSSFCell myCell = null;
-	        int sheets = workbook.getNumberOfSheets();
-	        int fCell = 0;
-	        int lCell = 0;
-	        int fRow = 0;
-	        int lRow = 0;
-	        for (int iSheet = 2; iSheet < sheets; iSheet++) {
-	            sheet = workbook.getSheetAt(iSheet);
-	            sheet2 = workbook.getSheetAt(iSheet-1);
-	            String sheetName = sheet2.getSheetName();
-	            if (sheet != null) {
-	                workbook.removeSheetAt(iSheet-1);
-	                mySheet = workbook.createSheet(sheetName);
 
-	                fRow = sheet.getFirstRowNum();
-	                lRow = sheet.getLastRowNum();
-	                for (int iRow = fRow; iRow <= lRow; iRow++) {
-	                    row = sheet.getRow(iRow);
-	                    myRow = mySheet.createRow(iRow);
-	                    if (row != null) {
-	                        fCell = row.getFirstCellNum();
-	                        lCell = row.getLastCellNum();
-	                        for (int iCell = fCell; iCell < lCell; iCell++) {
-	                            cell = row.getCell(iCell);
-	                            myCell = myRow.createCell(iCell);
-	                            if (cell != null) {
-	                                myCell.setCellType(cell.getCellType());
-	                                switch (cell.getCellType()) {
-	                                //case HSSFCell.CELL_TYPE_BLANK:
-	                                    //myCell.setCellValue("");
-	                                   // break;
-
-	                                //case HSSFCell.CELL_TYPE_BOOLEAN:
-	                                    //myCell.setCellValue(cell.getBooleanCellValue());
-	                                   // break;
-
-	                               // case HSSFCell.CELL_TYPE_ERROR:
-	                                   // myCell.setCellErrorValue(cell.getErrorCellValue());
-	                                  //  break;
-
-	                                //case HSSFCell.CELL_TYPE_FORMULA:
-	                                    //myCell.setCellFormula(cell.getCellFormula());
-	                                   // break;
-
-	                                case HSSFCell.CELL_TYPE_NUMERIC:
-	                                    myCell.setCellValue(cell.getNumericCellValue());
-	                                    break;
-
-	                                case HSSFCell.CELL_TYPE_STRING:
-	                                    myCell.setCellValue(cell.getStringCellValue());
-	                                    break;
-	                                default:
-	                                    myCell.setCellFormula(cell.getCellFormula());
-	                                }
-	                            }
-	                        }
-	                    }
-	                }
-	            }
-	             
+	            
 	           
-	        }
-	        
-	        myWorkBook.createSheet("TLMResultCurrentday");
+	       workbook.removeSheetAt(workbook.getSheetIndex("TLMResultPreviousday"));
+	       workbook.setSheetName(workbook.getSheetIndex("TLMResultCurrentday"), "TLMResultPreviousday");
+	       workbook.createSheet("TLMResultCurrentday");
 	        //Now update the current sheet with the data base values
+	       ArrayList<String[]> dataList = new ArrayList<String[]>();
+	   
+
+	       
+	       Connection conn = null;
+	       Statement stmt = null;
+	       try{
+	        
+	          Class.forName("com.mysql.jdbc.Driver");
+
+	          conn = DriverManager.getConnection("sdfsdf","sdfsdf","adasd");
+
+	         
+	          stmt = conn.createStatement();
+	          String sql;
+	          sql = "SELECT id,name FROM Employees";
+	          ResultSet rs = stmt.executeQuery(sql);
+
+	        
+	          while(rs.next()){
+	        //	  rs.getString(0), rs.getString(1)
+	        	  String[] s = new String[2];
+	        	  s[0] = rs.getString(0);
+	        	  s[1] = rs.getString(1);
+	        	  dataList.add(s);
+	          }
+	        
+	          rs.close();
+	          stmt.close();
+	          conn.close();
+	       }catch(SQLException se){
+	          
+	          se.printStackTrace();
+	       }catch(Exception e){
+	          //Handle errors for Class.forName
+	          e.printStackTrace();
+	       }finally{
+	          //finally block used to close resources
+	          try{
+	             if(stmt!=null)
+	                stmt.close();
+	          }catch(SQLException se2){
+	          }// nothing we can do
+	          try{
+	             if(conn!=null)
+	                conn.close();
+	          }catch(SQLException se){
+	             se.printStackTrace();
+	          }//end finally try
+	       }
+	        for(int i=0;i<dataList.size();i++){
+	        	Sheet sheet = workbook.getSheet("TLMResultCurrentday");
+	        	Row row = sheet.createRow(i);
+	        	String[] s = dataList.get(i);
+	        	Cell cell1 = row.createCell(0);
+	        	Cell cell2 = row.createCell(1);
+	        	cell1.setCellValue(s[0]);
+	        	cell2.setCellValue(s[1]);
+	        }
 	        bis.close();
 	        BufferedOutputStream bos = new BufferedOutputStream(
 	                new FileOutputStream("C://Users//akanchha.jaiswal//Downloads//Outstanding_Items_Count 12-May-2017.xls", false));
 	        workbook.write(bos);
 	        bos.close();
+	        }
 	    }
-	}
+	 
 
+	
