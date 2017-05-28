@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class LoadConfiguration {
+public class LoadExcelFile {
 	public String getExcelFile () throws IOException {
 		Properties properties = new Properties();
 		InputStream inpStream ;
@@ -21,8 +21,9 @@ public class LoadConfiguration {
 		} catch (IOException ioException) {
 			ioException.printStackTrace();
 		}finally {
-			inpStream.close();
+			//inpStream.close();  uncomment if you dont need excelsheet in inout stream
 		}
-	    return excelSheet;
+	    return excelSheet; // comment this if you want method not to return the excel sheet
+		
 	  }
 }
